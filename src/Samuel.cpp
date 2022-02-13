@@ -25,7 +25,7 @@ struct Samuel : Module {
 	IgnoreClockAfterResetTimer ignoreClockAfterResetTimer;
 	float lastclockVoltage = 0.0f;
 
-	std::string message = "dandav";
+	std::string message = "DanielDaviesSamuelDanielDaviesSamuelDanielDaviesSamuel";
 	std::string lastMessage;
 
 	int step = 0;
@@ -42,8 +42,6 @@ struct Samuel : Module {
 			step = 0;
 		}
 		if (lastclockVoltage == 0 && clockInput != 0 && !ignoreClockAfterResetTimer.shouldIgnore) { // clock detected
-			// DEBUG(sequence[step] ? "yes" : "no");
-			// DEBUG(std::to_string(step).c_str());
 			outputs[OUTPUT_GATE_OUT_OUTPUT].setVoltage(sequenceGenerator.sequence[step] ? 10.0f : 0);
 			step++;
 		}
@@ -63,12 +61,12 @@ struct SamuelWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(9.511, 10.061)), module, Samuel::INPUT_CLOCK_IN_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(50.511, 14.5)), module, Samuel::INPUT_CLOCK_IN_INPUT));
 
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(40.6, 10.061)), module, Samuel::OUTPUT_GATE_OUT_OUTPUT));
+		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(75.6, 14.5)), module, Samuel::OUTPUT_GATE_OUT_OUTPUT));
 
 		if(module) {
-			LetterDisplay* display = createWidget<LetterDisplay>(mm2px(Vec(10.0, 20.0)));
+			LetterDisplay* display = createWidget<LetterDisplay>(mm2px(Vec(5.759, 25.0)));
 			display->initialize();
 			display->message = &module->message;
 			addChild(display);

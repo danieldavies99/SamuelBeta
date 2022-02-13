@@ -81,8 +81,9 @@ void LetterDisplay::process() {
 void LetterDisplay::drawMessage() {
     std::transform(message->begin(), message->end(),message->begin(), ::toupper);
     for(int i = 0; i < message->size(); i++) {
-        int lineNum = floor(i / 13);
-        drawLetter((*message)[i], (i - lineNum*13)*6, lineNum * 8);
+        int lineLength = (numPixelsX + 1)/6;
+        int lineNum = floor(i / lineLength);
+        drawLetter((*message)[i], (i - lineNum*lineLength)*6, lineNum * 8);
     }
 }
 

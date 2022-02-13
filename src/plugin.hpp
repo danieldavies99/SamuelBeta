@@ -29,13 +29,13 @@ struct OledPixel {
 
 struct OledPixelDisplay : widget::Widget {
 	std::vector<std::vector<OledPixel>> pixels;
-	int numPixelsX = 77; // should be multiple of six minus one for letters 
+	int numPixelsX = 83; // should be multiple of six minus one for letters 
 	int numPixelsY = 31; // should be multiple of eight minus one for letters
 	NVGcolor pixelColor =  nvgRGBA(233, 79, 61, 255);
 
 	double pixelWidth = mm2px(0.98);
 	double pixelWidthWithGaps = mm2px(1.0);
-	double borderSize = mm2px(1.5);
+	double borderSize = mm2px(2.0);
 
 	void initialize();
 
