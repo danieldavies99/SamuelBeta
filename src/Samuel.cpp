@@ -25,7 +25,7 @@ struct Samuel : Module {
 	IgnoreClockAfterResetTimer ignoreClockAfterResetTimer;
 	float lastclockVoltage = 0.0f;
 
-	std::string message = "Daniel Davies Samuel";
+	std::string message = "chris jolley";
 	std::string lastMessage;
 
 	int step = 0;
