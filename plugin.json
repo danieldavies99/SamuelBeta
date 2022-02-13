@@ -1,0 +1,23 @@
+{
+  "slug": "Samuel",
+  "name": "Samuel",
+  "version": "2.0.0",
+  "license": "proprietary",
+  "brand": "Samuel",
+  "author": "",
+  "authorEmail": "",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "",
+  "sourceUrl": "",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "Samuel",
+      "name": "Samuel",
+      "description": "",
+      "tags": []
+    }
+  ]
+}
