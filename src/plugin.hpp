@@ -37,10 +37,12 @@ struct OledPixelDisplay : widget::Widget {
 	double pixelWidthWithGaps = mm2px(1.0);
 	double borderSize = mm2px(2.0);
 
+	bool shouldShowCursor = true;
+	int framesSinceLastCursorChange = 0;
 	void initialize();
-
 	void lightPixel(int x, int y, int offsetX, int offsetY);
 	void lightAll();
+	void darkenAll();
 	void drawGrid(const DrawArgs& args);
 	void drawLayer(const DrawArgs& args, int layer) override;
 	virtual void process() {};
@@ -49,7 +51,10 @@ struct OledPixelDisplay : widget::Widget {
 struct LetterDisplay : OledPixelDisplay {
 	std::string* message;
 
+	void onHoverKey(const event::HoverKey &e) override;
+
 	void drawLetter(char letter, int x, int y);
+	void drawCursor(int x, int y);
 	void drawMessage();
 	void process() override;
 };

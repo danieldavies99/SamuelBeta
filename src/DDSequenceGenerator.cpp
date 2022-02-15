@@ -31,8 +31,9 @@ void SequenceGenerator::pushNewWord() {
 };
 
 void SequenceGenerator::generateSequence(std::string message) {
+    sequence.clear();
     std::transform(message.begin(), message.end(),message.begin(), ::toupper);
-    for(std::__cxx11::basic_string<char>::size_type i = 0; i < message.size(); i++) {
+    for(int i = 0; i < message.size(); i++) {
         switch(message[i]) {
             case 'A': // ._
                 pushDot();

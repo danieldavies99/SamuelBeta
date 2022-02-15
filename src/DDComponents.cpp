@@ -25,7 +25,7 @@ void OledPixelDisplay::lightPixel(int x, int y, int offsetX, int offsetY) {
 void OledPixelDisplay::drawLayer(const DrawArgs& args, int layer) {
     if (layer != 1)
         return;
-    // DEBUG("drawing");
+
     process();
 
     nvgBeginPath(args.vg);
@@ -44,6 +44,14 @@ void OledPixelDisplay::lightAll() {
     }
 }
 
+void OledPixelDisplay::darkenAll() {
+    for(int i = 0; i < numPixelsX; i++) {
+        for(int j = 0; j < numPixelsY; j++) {
+            pixels[i][j].isLit = false;
+        }
+    }
+}
+
 void OledPixelDisplay::drawGrid(const DrawArgs& args) {
     nvgTranslate(args.vg, borderSize, borderSize);
     if(pixels[0].size() < numPixelsY || pixels.size() < numPixelsX) {
@@ -54,7 +62,7 @@ void OledPixelDisplay::drawGrid(const DrawArgs& args) {
     }
     for(int i = 0; i < numPixelsX; i++) {
         for(int j = 0; j < numPixelsY; j++) {
-            if(pixels[i][j].isLit) {
+            if(pixels[i][j].isLit == true) {
                 nvgBeginPath(args.vg);
                 nvgRect(
                     args.vg,
@@ -79,12 +87,63 @@ void LetterDisplay::process() {
 }
 
 void LetterDisplay::drawMessage() {
+    darkenAll();
+    if(message->size() < 1) {
+        drawCursor(0,0);
+        return;
+    }
     std::transform(message->begin(), message->end(),message->begin(), ::toupper);
     for(int i = 0; i < message->size(); i++) {
         int lineLength = (numPixelsX + 1)/6;
         int lineNum = floor(i / lineLength);
         drawLetter((*message)[i], (i - lineNum*lineLength)*6, lineNum * 8);
+
+        int cursorLineNum = floor( (i + 1) / lineLength);
+        // DEBUG(std::to_string(cursorLineNum).c_str());
+        if(i == message->size() - 1) {
+            drawCursor((i + 1 - cursorLineNum*lineLength)*6, cursorLineNum * 8);
+        }
     }
+}
+
+void LetterDisplay::onHoverKey(const event::HoverKey &e)
+{   
+    if(e.action == GLFW_PRESS)
+	{
+		// do stuff
+        if(e.key > 48 && e.key < 59 )  { // 0 - 9
+            message->append(e.keyName);
+        }
+        if(e.key > 64 && e.key < 91 )  { // A - Z
+            message->append(e.keyName);
+        }
+        
+        if(e.key == GLFW_KEY_SPACE) {
+            message->append(" ");
+        }
+        if(e.key == GLFW_KEY_BACKSPACE) { // backspace
+            DEBUG("backspace hit");
+            message->pop_back();
+        }
+	}
+}
+
+
+void LetterDisplay::drawCursor(int x, int y) {
+    if(shouldShowCursor) {
+        lightPixel(0, 0, x, y);
+        lightPixel(0, 1, x, y);
+        lightPixel(0, 2, x, y);
+        lightPixel(0, 3, x, y);
+        lightPixel(0, 4, x, y);
+        lightPixel(0, 5, x, y);
+        lightPixel(0, 6, x, y);
+    }
+    if(framesSinceLastCursorChange > 100) {
+        shouldShowCursor = !shouldShowCursor;
+        framesSinceLastCursorChange = 0;
+    }
+    framesSinceLastCursorChange++;
 }
 
 void LetterDisplay::drawLetter(char letter, int x, int y) {

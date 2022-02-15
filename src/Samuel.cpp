@@ -20,12 +20,13 @@ struct Samuel : Module {
 		config(PARAMS_LEN, INPUTS_LEN, OUTPUTS_LEN, LIGHTS_LEN);
 		configInput(INPUT_CLOCK_IN_INPUT, "");
 		configOutput(OUTPUT_GATE_OUT_OUTPUT, "");
+		// message.reserve(100);
 	}
 
 	IgnoreClockAfterResetTimer ignoreClockAfterResetTimer;
 	float lastclockVoltage = 0.0f;
 
-	std::string message = "DanielDaviesSamuelDanielDaviesSamuelDanielDaviesSamuel";
+	std::string message = "";
 	std::string lastMessage;
 
 	int step = 0;
@@ -35,6 +36,9 @@ struct Samuel : Module {
 	void process(const ProcessArgs& args) override {
 		if (message != lastMessage) {
 			sequenceGenerator.generateSequence(message);
+		}
+		if (sequenceGenerator.sequence.size() < 1) {
+			return;
 		}
 		ignoreClockAfterResetTimer.process(1.0 / args.sampleRate);
 		const float clockInput = inputs[INPUT_CLOCK_IN_INPUT].getVoltage();
