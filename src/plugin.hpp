@@ -30,7 +30,7 @@ struct OledPixel {
 struct OledPixelDisplay : widget::Widget {
 	std::vector<std::vector<OledPixel>> pixels;
 	int numPixelsX = 83; // should be multiple of six minus one for letters 
-	int numPixelsY = 31; // should be multiple of eight minus one for letters
+	int numPixelsY = 47; // should be multiple of eight minus one for letters
 	NVGcolor pixelColor =  nvgRGBA(233, 79, 61, 255);
 
 	double pixelWidth = mm2px(0.98);
@@ -46,6 +46,13 @@ struct OledPixelDisplay : widget::Widget {
 	void drawGrid(const DrawArgs& args);
 	void drawLayer(const DrawArgs& args, int layer) override;
 	virtual void process() {};
+};
+
+struct SteppedRedKnob : RoundKnob {
+    SteppedRedKnob() {
+        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/RedKnob.svg")));
+        snap = true;
+    }
 };
 
 struct LetterDisplay : OledPixelDisplay {
