@@ -1,13 +1,15 @@
 #include "plugin.hpp"
 
 void SequenceGenerator::pushDot() {
-    sequence.push_back(true);
+    for(int i = 0; i < dotLength; i++) {
+        sequence.push_back(true);
+    }
 };
 
 void SequenceGenerator::pushDash() {
-    sequence.push_back(true);
-    sequence.push_back(true);
-    sequence.push_back(true);
+    for(int i = 0; i < dashLength; i++) {
+        sequence.push_back(true);
+    }
 };
 
 void SequenceGenerator::pushNewPartInLetter() {
@@ -15,25 +17,21 @@ void SequenceGenerator::pushNewPartInLetter() {
 };
 
 void SequenceGenerator::pushNewLetter() {
-    sequence.push_back(false);
-    sequence.push_back(false);
-    sequence.push_back(false);
+    for(int i = 0; i < newLetterLength; i++) {
+        sequence.push_back(false);
+    }
 };
 
 void SequenceGenerator::pushNewWord() {
-    sequence.push_back(false);
-    sequence.push_back(false);
-    sequence.push_back(false);
-    sequence.push_back(false);
-    sequence.push_back(false);
-    sequence.push_back(false);
-    sequence.push_back(false);
+    for(int i = 0; i < newWordLength; i++) {
+        sequence.push_back(false);
+    }
 };
 
 void SequenceGenerator::generateSequence(std::string message) {
     sequence.clear();
     std::transform(message.begin(), message.end(),message.begin(), ::toupper);
-    for(int i = 0; i < message.size(); i++) {
+    for(int i = 0; i < (int)message.size(); i++) {
         switch(message[i]) {
             case 'A': // ._
                 pushDot();

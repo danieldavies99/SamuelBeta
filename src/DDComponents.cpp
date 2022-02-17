@@ -1,6 +1,8 @@
 #include "plugin.hpp"
 
 void OledPixelDisplay::initialize() {
+    box.size.x = (numPixelsX*pixelWidthWithGaps) + (2*borderSize);
+    box.size.y = numPixelsY*pixelWidthWithGaps  + (2*borderSize);
     for(int i = 0; i < numPixelsX; i++) {
         std::vector<OledPixel> newPixelRow;
         for(int j = 0; j < numPixelsY; j++) {
@@ -54,7 +56,7 @@ void OledPixelDisplay::darkenAll() {
 
 void OledPixelDisplay::drawGrid(const DrawArgs& args) {
     nvgTranslate(args.vg, borderSize, borderSize);
-    if(pixels[0].size() < numPixelsY || pixels.size() < numPixelsX) {
+    if((int)pixels[0].size() < numPixelsY || (int)pixels.size() < numPixelsX) {
         // DEBUG("not enough pixels detected");
         // DEBUG(std::to_string(pixels[0].size()).c_str());
         // DEBUG(std::to_string(pixels.size()).c_str());
@@ -82,55 +84,78 @@ void OledPixelDisplay::drawGrid(const DrawArgs& args) {
 }
 
 
-void LetterDisplay::process() {
+void TextInputDisplay::process() {
     drawMessage();
 }
 
-void LetterDisplay::drawMessage() {
+void LengthValuesDisplay::process() {
+    darkenAll();
+    drawLetter(*val0, 0, 0);
+	drawLetter(*val1, 17, 0);
+	drawLetter(*val2, 34, 0);
+	drawLetter(*val3, 51, 0);
+}
+
+void TextInputDisplay::drawMessage() {
     darkenAll();
     if(message->size() < 1) {
         drawCursor(0,0);
         return;
     }
     std::transform(message->begin(), message->end(),message->begin(), ::toupper);
-    for(int i = 0; i < message->size(); i++) {
+    for(int i = 0; i < (int)message->size(); i++) {
         int lineLength = (numPixelsX + 1)/6;
         int lineNum = floor(i / lineLength);
         drawLetter((*message)[i], (i - lineNum*lineLength)*6, lineNum * 8);
 
         int cursorLineNum = floor( (i + 1) / lineLength);
         // DEBUG(std::to_string(cursorLineNum).c_str());
-        if(i == message->size() - 1) {
+        if(i == (int)message->size() - 1) {
             drawCursor((i + 1 - cursorLineNum*lineLength)*6, cursorLineNum * 8);
         }
     }
 }
 
-void LetterDisplay::onHoverKey(const event::HoverKey &e)
+void TextInputDisplay::onButton(const ButtonEvent& e) {
+    e.consume(this);
+};
+
+void TextInputDisplay::onSelect(const SelectEvent& e) {
+    isSelected = true;
+    e.consume(this);
+}
+
+void TextInputDisplay::onDeselect(const DeselectEvent& e) {
+    isSelected = false;
+}
+
+void TextInputDisplay::onSelectKey(const SelectKeyEvent& e)
 {   
+    e.consume(this);
     if(e.action == GLFW_PRESS)
 	{
 		// do stuff
-        if(e.key > 48 && e.key < 59 )  { // 0 - 9
+        if(e.key > 47 && e.key < 59 )  { // 0 - 9
             message->append(e.keyName);
         }
         if(e.key > 64 && e.key < 91 )  { // A - Z
             message->append(e.keyName);
         }
-        
         if(e.key == GLFW_KEY_SPACE) {
             message->append(" ");
         }
         if(e.key == GLFW_KEY_BACKSPACE) { // backspace
-            DEBUG("backspace hit");
-            message->pop_back();
+            if(message->size() > 0) {
+                message->pop_back();
+            }
+            e.consume(this);
         }
 	}
 }
 
 
-void LetterDisplay::drawCursor(int x, int y) {
-    if(shouldShowCursor) {
+void TextInputDisplay::drawCursor(int x, int y) {
+    if(shouldShowCursor && isSelected) {
         lightPixel(0, 0, x, y);
         lightPixel(0, 1, x, y);
         lightPixel(0, 2, x, y);
@@ -146,9 +171,221 @@ void LetterDisplay::drawCursor(int x, int y) {
     framesSinceLastCursorChange++;
 }
 
-void LetterDisplay::drawLetter(char letter, int x, int y) {
+void CharacterDisplay::drawLetter(char letter, int x, int y) {
     // DEBUG("letter " + letter);
     switch (letter) {
+        case '0':
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 2, x, y);
+            lightPixel(0, 3, x, y);
+            lightPixel(0, 4, x, y);
+            lightPixel(0, 5, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 4, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 2, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 1, x, y);
+            lightPixel(4, 2, x, y);
+            lightPixel(4, 3, x, y);
+            lightPixel(4, 4, x, y);
+            lightPixel(4, 5, x, y);
+            break;
+        case '1':
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 1, x, y);
+            lightPixel(2, 2, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 4, x, y);
+            lightPixel(2, 5, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 6, x, y);
+            break;
+        case '2':
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 4, x, y);
+            lightPixel(0, 5, x, y);
+            lightPixel(0, 6, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 3, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 1, x, y);
+            lightPixel(4, 2, x, y);
+            lightPixel(4, 6, x, y);
+            break;
+        case '3':
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 5, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 1, x, y);
+            lightPixel(4, 2, x, y);
+            lightPixel(4, 4, x, y);
+            lightPixel(4, 5, x, y);
+            break;
+        case '4':
+            lightPixel(0, 0, x, y);
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 2, x, y);
+            lightPixel(0, 3, x, y);
+
+            lightPixel(1, 3, x, y);
+            
+            lightPixel(2, 3, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 1, x, y);
+            lightPixel(3, 2, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 4, x, y);
+            lightPixel(3, 5, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 3, x, y);
+            break;
+        case '5':
+            lightPixel(0, 0, x, y);
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 2, x, y);
+            lightPixel(0, 3, x, y);
+            lightPixel(0, 6, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 3, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 0, x, y);
+            lightPixel(4, 4, x, y);
+            lightPixel(4, 5, x, y);
+            break;
+        case '6':
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 2, x, y);
+            lightPixel(0, 3, x, y);
+            lightPixel(0, 4, x, y);
+            lightPixel(0, 5, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 3, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 0, x, y);
+            lightPixel(4, 4, x, y);
+            lightPixel(4, 5, x, y);
+            break;
+        case '7':
+            lightPixel(0, 0, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 4, x, y);
+            lightPixel(1, 5, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+
+            lightPixel(4, 0, x, y);
+            lightPixel(4, 1, x, y);
+            lightPixel(4, 2, x, y);
+            break;
+        case '8':
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 2, x, y);
+            lightPixel(0, 4, x, y);
+            lightPixel(0, 5, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 3, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 1, x, y);
+            lightPixel(4, 2, x, y);
+            lightPixel(4, 4, x, y);
+            lightPixel(4, 5, x, y);
+            break;
+        case '9':
+            lightPixel(0, 1, x, y);
+            lightPixel(0, 2, x, y);
+            lightPixel(0, 5, x, y);
+
+            lightPixel(1, 0, x, y);
+            lightPixel(1, 3, x, y);
+            lightPixel(1, 6, x, y);
+            
+            lightPixel(2, 0, x, y);
+            lightPixel(2, 3, x, y);
+            lightPixel(2, 6, x, y);
+
+            lightPixel(3, 0, x, y);
+            lightPixel(3, 3, x, y);
+            lightPixel(3, 6, x, y);
+
+            lightPixel(4, 1, x, y);
+            lightPixel(4, 2, x, y);
+            lightPixel(4, 3, x, y);
+            lightPixel(4, 4, x, y);
+            lightPixel(4, 5, x, y);
+            break;
         case 'A':
             lightPixel(0, 2, x, y);
             lightPixel(0, 3, x, y);

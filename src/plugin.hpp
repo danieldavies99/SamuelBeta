@@ -27,18 +27,23 @@ struct OledPixel {
 	bool isLit;
 };
 
+struct SteppedRedKnob : RoundKnob {
+    SteppedRedKnob() {
+        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/RedKnob.svg")));
+        snap = true;
+    }
+};
+
 struct OledPixelDisplay : widget::Widget {
 	std::vector<std::vector<OledPixel>> pixels;
-	int numPixelsX = 83; // should be multiple of six minus one for letters 
-	int numPixelsY = 47; // should be multiple of eight minus one for letters
+	int numPixelsX = 0;
+	int numPixelsY = 0;
 	NVGcolor pixelColor =  nvgRGBA(233, 79, 61, 255);
 
-	double pixelWidth = mm2px(0.98);
-	double pixelWidthWithGaps = mm2px(1.0);
+	double pixelWidth = mm2px(1.03);
+	double pixelWidthWithGaps = mm2px(1.04);
 	double borderSize = mm2px(2.0);
 
-	bool shouldShowCursor = true;
-	int framesSinceLastCursorChange = 0;
 	void initialize();
 	void lightPixel(int x, int y, int offsetX, int offsetY);
 	void lightAll();
@@ -48,25 +53,48 @@ struct OledPixelDisplay : widget::Widget {
 	virtual void process() {};
 };
 
-struct SteppedRedKnob : RoundKnob {
-    SteppedRedKnob() {
-        setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/RedKnob.svg")));
-        snap = true;
-    }
+struct CharacterDisplay : OledPixelDisplay {
+	void drawLetter(char letter, int x, int y);
+	// void process() override;
 };
 
-struct LetterDisplay : OledPixelDisplay {
+struct TextInputDisplay : CharacterDisplay {
+	TextInputDisplay() {
+		numPixelsX = 83; // should be multiple of six minus one for letters 
+		numPixelsY = 47; // should be multiple of eight minus one for letters
+	}
+	bool isSelected = false;
+	bool shouldShowCursor = true;
+	int framesSinceLastCursorChange = 0;
 	std::string* message;
 
-	void onHoverKey(const event::HoverKey &e) override;
+	void onButton(const ButtonEvent& e) override;
+	void onSelectKey(const SelectKeyEvent& e) override;
+	void onSelect(const SelectEvent& e) override;
+	void onDeselect(const DeselectEvent& e) override;
 
-	void drawLetter(char letter, int x, int y);
 	void drawCursor(int x, int y);
 	void drawMessage();
 	void process() override;
 };
+ struct LengthValuesDisplay : CharacterDisplay {
+	char* val0;
+	char* val1;
+	char* val2;
+	char* val3;
+
+	LengthValuesDisplay() {
+		numPixelsX = 71 - 14; // should be multiple of six minus one for letters 
+		numPixelsY = 7; // should be multiple of eight minus one for letters
+	}
+	void process() override;
+};
 
 struct SequenceGenerator {
+	int dotLength = 1;
+	int dashLength = 3;
+	int newLetterLength = 3;
+	int newWordLength = 7;
 	std::vector<bool> sequence;
 	void pushDot();
 	void pushDash();
