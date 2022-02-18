@@ -45,6 +45,8 @@ struct Samuel : Module {
 	char lengthNewWord = '0';
 	int step = 0;
 
+	dsp::PulseGenerator endGatePulse;
+
 	SequenceGenerator sequenceGenerator;
 
 	void process(const ProcessArgs& args) override {
@@ -69,9 +71,16 @@ struct Samuel : Module {
 			step = 0;
 		}
 		if (lastclockVoltage == 0 && clockInput != 0 && !ignoreClockAfterResetTimer.shouldIgnore) { // clock detected
+			if(step == 0) {
+				endGatePulse.trigger(1e-3f);
+			}
 			outputs[OUTPUT_GATE_OUT_OUTPUT].setVoltage(sequenceGenerator.sequence[step] ? 10.0f : 0);
 			step++;
 		}
+
+		const bool shouldPulseEnd = endGatePulse.process(1.0 / args.sampleRate);
+		outputs[OUT_END_OUTPUT].setVoltage(shouldPulseEnd ? 10.0 : 0.0);		
+
 		lastclockVoltage = clockInput;
 		lastMessage = message;
 	}

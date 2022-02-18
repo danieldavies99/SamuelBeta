@@ -208,9 +208,9 @@ void SequenceGenerator::generateSequence(std::string message) {
                 pushDot();
                 break;
         }
-        if(message[i] != ' ') {
+        if(message[i] != ' ' && i != (int)message.size() - 1 && message[i+1] != ' ') {
             pushNewLetter();
-        } else {
+        } else if (message[i] == ' ') {
             pushNewWord();
         }
     }
