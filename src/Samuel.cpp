@@ -63,7 +63,7 @@ struct Samuel : Module {
 		screenDashLength = '0' + sequenceGenerator.dashLength;
 		screenNewLetterLength = '0' + sequenceGenerator.newLetterLength;
 		screenNewWordLength = '0' + sequenceGenerator.newWordLength;
-		
+
 		ignoreClockAfterResetTimer.process(1.0 / args.sampleRate);
 
 		float resetInput = inputs[INPUT_RESET_INPUT].getVoltage();
@@ -95,6 +95,19 @@ struct Samuel : Module {
 		lastclockVoltage = clockInput;
 		lastMessage = message;
 		lastResetInput = resetInput;
+	}
+
+	json_t *dataToJson() override {
+		json_t *rootJ = json_object();
+		json_object_set_new(rootJ, "samuelText", json_string(message.c_str()));
+		return rootJ;
+	}
+
+	void dataFromJson(json_t *rootJ) override {
+		json_t *messageJ = json_object_get(rootJ, "samuelText");
+		if(messageJ) {
+			message = json_string_value(messageJ);
+		}
 	}
 };
 
