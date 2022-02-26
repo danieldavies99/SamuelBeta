@@ -10,6 +10,7 @@ struct Samuel : Module {
 	};
 	enum InputId {
 		INPUT_CLOCK_IN_INPUT,
+		INPUT_RESET_INPUT,
 		INPUTS_LEN
 	};
 	enum OutputId {
@@ -29,20 +30,23 @@ struct Samuel : Module {
 		configParam(KNOB_NEW_WORD_LENGTH_PARAM, 0.f, 9.f, 7.f, "");
 
 		configInput(INPUT_CLOCK_IN_INPUT, "");
+		configInput(INPUT_RESET_INPUT, "");
+
 		configOutput(OUTPUT_GATE_OUT_OUTPUT, "");
 		configOutput(OUT_END_OUTPUT, "");
 	}
 
 	IgnoreClockAfterResetTimer ignoreClockAfterResetTimer;
 	float lastclockVoltage = 0.0f;
+	float lastResetInput = 0.0f;
 
 	std::string message = "";
 	std::string lastMessage;
 
-	char lengthDot = '0';
-	char lengthDash = '0';
-	char lengthNewLetter = '0';
-	char lengthNewWord = '0';
+	char screenDotLength = '0';
+	char screenDashLength = '0';
+	char screenNewLetterLength = '0';
+	char screenNewWordLength = '0';
 	int step = 0;
 
 	dsp::PulseGenerator endGatePulse;
@@ -55,17 +59,24 @@ struct Samuel : Module {
 		sequenceGenerator.newLetterLength = (int)params[KNOB_NEW_LETTER_LENGTH_PARAM].getValue();
 		sequenceGenerator.newWordLength = (int)params[KNOB_NEW_WORD_LENGTH_PARAM].getValue();
 
-		lengthDot = '0' + sequenceGenerator.dotLength;
-		lengthDash = '0' + sequenceGenerator.dashLength;
-		lengthNewLetter = '0' + sequenceGenerator.newLetterLength;
-		lengthNewWord = '0' + sequenceGenerator.newWordLength;
+		screenDotLength = '0' + sequenceGenerator.dotLength;
+		screenDashLength = '0' + sequenceGenerator.dashLength;
+		screenNewLetterLength = '0' + sequenceGenerator.newLetterLength;
+		screenNewWordLength = '0' + sequenceGenerator.newWordLength;
+		
+		ignoreClockAfterResetTimer.process(1.0 / args.sampleRate);
 
-		sequenceGenerator.generateSequence(message); // can make this more efficient, calling per letter rather than the whole sequence each time
+		float resetInput = inputs[INPUT_RESET_INPUT].getVoltage();
+		if (lastResetInput == 0 && resetInput != 0) { // reset triggered
+			ignoreClockAfterResetTimer.resetTriggered();
+			step = 0;
+		}
+
+		sequenceGenerator.generateSequence(message); // TODO: possible efficiency improvement: calling per letter rather than the whole sequence each time
 		if ((int)sequenceGenerator.sequence.size() < 1) {
 			outputs[OUTPUT_GATE_OUT_OUTPUT].setVoltage(0);
 			return;
 		}
-		ignoreClockAfterResetTimer.process(1.0 / args.sampleRate);
 		const float clockInput = inputs[INPUT_CLOCK_IN_INPUT].getVoltage();
 		if(step > (int)sequenceGenerator.sequence.size()) {
 			step = 0;
@@ -83,6 +94,7 @@ struct Samuel : Module {
 
 		lastclockVoltage = clockInput;
 		lastMessage = message;
+		lastResetInput = resetInput;
 	}
 };
 
@@ -97,7 +109,8 @@ struct SamuelWidget : ModuleWidget {
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(45.929, 94.672)), module, Samuel::KNOB_NEW_LETTER_LENGTH_PARAM));
 		addParam(createParamCentered<SteppedRedKnob>(mm2px(Vec(63.915, 94.672)), module, Samuel::KNOB_NEW_WORD_LENGTH_PARAM));
 
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(57.249, 16.245)), module, Samuel::INPUT_CLOCK_IN_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(63.915, 16.245)), module, Samuel::INPUT_CLOCK_IN_INPUT));
+		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(81.901, 16.245)), module, Samuel::INPUT_RESET_INPUT));
 
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(88.935, 88.853)), module, Samuel::OUTPUT_GATE_OUT_OUTPUT));
 		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(88.935, 99.276)), module, Samuel::OUT_END_OUTPUT));
@@ -110,10 +123,10 @@ struct SamuelWidget : ModuleWidget {
 
 			LengthValuesDisplay* lengthValuesDisplay = createWidget<LengthValuesDisplay>(mm2px(Vec(5.759, 105)));
 			lengthValuesDisplay->initialize();
-			lengthValuesDisplay->val0 = &module->lengthDot;
-			lengthValuesDisplay->val1 = &module->lengthDash;
-			lengthValuesDisplay->val2 = &module->lengthNewLetter;
-			lengthValuesDisplay->val3 = &module->lengthNewWord;
+			lengthValuesDisplay->val0 = &module->screenDotLength;
+			lengthValuesDisplay->val1 = &module->screenDashLength;
+			lengthValuesDisplay->val2 = &module->screenNewLetterLength;
+			lengthValuesDisplay->val3 = &module->screenNewWordLength;
 			addChild(lengthValuesDisplay);
 		}
 
